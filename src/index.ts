@@ -1,33 +1,39 @@
 import { API, InlineTool, InlineToolConstructable, InlineToolConstructorOptions, SanitizerConfig } from '@editorjs/editorjs'
+import { MATH_ICON } from './icons'
 
 export default class TestTool implements InlineTool {
     shortcut?: string | undefined
-    static get isInline() {
+    public static get isInline() {
         return true
     }
     sanitize?: SanitizerConfig | undefined
-    static get title() {
+    public static get title() {
         return 'Math'
     }
     private api: API
+    private tag: string
     constructor({ api, config }: InlineToolConstructorOptions) {
         this.api = api
+        this.tag = 'span'
     }
-    render(): HTMLElement {
+    public render(): HTMLElement {
         return new DOMParser().parseFromString(
             /*html */ `
             <button type='button' class='${this.api.styles.inlineToolButton}'>
-            
+            ${MATH_ICON}
         </button>`,
             'text/html',
         ).body.firstChild as HTMLElement
     }
-    surround(range: Range): void {
-        // throw new Error('Method not implemented.')
+    public surround(range: Range): void {
+        if (!range) return
+        const termWrapper = this.api.selection.findParentTag(this.tag)
+
+        if (termWrapper) this.unwrap(range)
+        else this.wrap(range)
     }
-    checkState(selection: Selection): boolean {
-        // throw new Error('Method not implemented.')
-        return true
+    public checkState(selection: Selection): boolean {
+        return Boolean(this.api.selection.findParentTag(this.tag))
     }
     // renderActions?(): HTMLElement {
     //     throw new Error('Method not implemented.')
@@ -42,4 +48,45 @@ export default class TestTool implements InlineTool {
     // reset?(): void | Promise<void> {
     //     throw new Error('Method not implemented.')
     // }
+    private get CSS() {
+        return {
+            inlineMath: 'editorjs-inline-math',
+        }
+    }
+
+    private wrap(range: Range) {
+        const selectedText = range.extractContents()
+
+        const mathContainer = new DOMParser().parseFromString(
+            /*html*/ `
+        <${this.tag} contenteditable='false'>
+            <math-field virtual-keyboard-mode='onfocus'
+            keypress-sound='none'
+            plonk-sound='none'
+            class='${this.CSS.inlineMath}'>
+            ${selectedText.textContent}
+            </math-field>
+            <span>&nbsp;</span>
+        </${this.tag}>
+        `,
+            'text/html',
+        ).body.firstChild as HTMLElement
+
+        range.insertNode(mathContainer)
+
+        const formula = mathContainer.querySelector('math-field') as HTMLInputElement
+        formula.addEventListener('blur', (e) => {
+            formula.textContent = formula.value
+        })
+
+        this.api.selection.expandToTag(formula)
+    }
+
+    private unwrap(range: Range) {
+        const formula = this.api.selection.findParentTag(this.tag, this.CSS.inlineMath)
+        const text = range.extractContents()
+
+        formula?.remove()
+        range.insertNode(text)
+    }
 }

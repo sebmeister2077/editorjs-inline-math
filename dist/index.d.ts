@@ -5,8 +5,12 @@ export default class TestTool implements InlineTool {
     sanitize?: SanitizerConfig | undefined;
     static get title(): string;
     private api;
+    private tag;
     constructor({ api, config }: InlineToolConstructorOptions);
     render(): HTMLElement;
     surround(range: Range): void;
     checkState(selection: Selection): boolean;
+    private get CSS();
+    private wrap;
+    private unwrap;
 }
