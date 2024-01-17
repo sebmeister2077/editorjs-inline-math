@@ -1,9 +1,9 @@
 import { API, InlineTool, InlineToolConstructable, InlineToolConstructorOptions, SanitizerConfig } from '@editorjs/editorjs'
 import { MATH_ICON } from './icons'
-import 'mathlive'
+import { MathfieldElement } from 'mathlive'
 import './index.css'
 
-export default class MathTool implements InlineTool {
+export default class InlineMath implements InlineTool {
     shortcut?: string | undefined
     public static get isInline() {
         return true
@@ -49,6 +49,27 @@ export default class MathTool implements InlineTool {
             },
         }
     }
+
+    public static hydrate(api: Pick<API, 'blocks'>, ...elements: HTMLElement[]) {
+        const allFormulas = elements.length ? elements : document.querySelectorAll('math-field')
+        allFormulas.forEach((el) => {
+            if (!(el instanceof MathfieldElement)) return
+            el.addEventListener('input', (e) => {
+                el.textContent = el.value
+            })
+            el.addEventListener('blur', () => {
+                const blockId = InlineMath.getElementBlockId(el)
+                if (!blockId) {
+                    console.warn(
+                        "Parent block not found for <math-field/>, can't propagate changes to editor. This may occur if you hydrate a math-field that is not inside your editor.",
+                    )
+                    return
+                }
+
+                api.blocks.getById(blockId)?.dispatchChange()
+            })
+        })
+    }
     // renderActions?(): HTMLElement {
     //     throw new Error('Method not implemented.')
     // }
@@ -89,9 +110,7 @@ export default class MathTool implements InlineTool {
         range.insertNode(mathContainer)
 
         const formula = mathContainer.querySelector('math-field') as HTMLInputElement
-        formula.addEventListener('blur', (e) => {
-            formula.textContent = formula.value
-        })
+        InlineMath.hydrate(this.api, formula)
 
         this.api.selection.expandToTag(formula)
     }
@@ -102,5 +121,20 @@ export default class MathTool implements InlineTool {
 
         formula?.remove()
         range.insertNode(text)
+    }
+
+    private static getElementBlockId(element: HTMLElement): string | null {
+        let el: HTMLElement = element
+        const blockIdAttributeName = 'data-id'
+
+        const isBlockElement = (el: HTMLElement) => el.classList.contains('ce-block') && el.hasAttribute(blockIdAttributeName)
+        while (el && !isBlockElement(el) && el.parentElement) {
+            el = el.parentElement
+        }
+        if (!el) return null
+
+        const blockId = el.parentElement?.getAttribute(blockIdAttributeName)
+        if (!blockId) return null
+        return blockId
     }
 }

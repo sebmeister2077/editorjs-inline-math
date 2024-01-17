@@ -6,7 +6,7 @@ module.exports = {
     output: {
         filename: 'bundle.js', // Output bundle file name
         path: path.join(__dirname, '/dist'),
-        library: 'InlineMathTool',
+        library: 'InlineMath',
         libraryTarget: 'umd',
         libraryExport: 'default',
     },
