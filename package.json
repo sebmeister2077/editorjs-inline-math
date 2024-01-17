@@ -8,6 +8,9 @@
         "build": "webpack --mode production",
         "build:dev": "webpack --mode development --watch --output-filename=dev-build.js"
     },
+    "dependencies": {
+        "mathlive": "^0.78.2"
+    },
     "devDependencies": {
         "@babel/core": "^7.23.7",
         "@babel/preset-env": "^7.23.8",

@@ -1,20 +1,22 @@
 import { API, InlineTool, InlineToolConstructable, InlineToolConstructorOptions, SanitizerConfig } from '@editorjs/editorjs'
 import { MATH_ICON } from './icons'
+import 'mathlive'
+import './index.css'
 
-export default class TestTool implements InlineTool {
+export default class MathTool implements InlineTool {
     shortcut?: string | undefined
     public static get isInline() {
         return true
     }
-    sanitize?: SanitizerConfig | undefined
+
     public static get title() {
         return 'Math'
     }
+
     private api: API
-    private tag: string
+    private tag: string = 'span'
     constructor({ api, config }: InlineToolConstructorOptions) {
         this.api = api
-        this.tag = 'span'
     }
     public render(): HTMLElement {
         return new DOMParser().parseFromString(
@@ -25,6 +27,7 @@ export default class TestTool implements InlineTool {
             'text/html',
         ).body.firstChild as HTMLElement
     }
+
     public surround(range: Range): void {
         if (!range) return
         const termWrapper = this.api.selection.findParentTag(this.tag)
@@ -34,6 +37,17 @@ export default class TestTool implements InlineTool {
     }
     public checkState(selection: Selection): boolean {
         return Boolean(this.api.selection.findParentTag(this.tag))
+    }
+
+    public static get sanitize(): SanitizerConfig {
+        return {
+            'math-field': {
+                'keypress-sound': true,
+                'virtual-keyboard-mode': true,
+                'plonk-sound': true,
+                class: true,
+            },
+        }
     }
     // renderActions?(): HTMLElement {
     //     throw new Error('Method not implemented.')
