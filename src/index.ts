@@ -1,27 +1,29 @@
-import { API, InlineTool, InlineToolConstructable, InlineToolConstructorOptions, SanitizerConfig } from '@editorjs/editorjs'
+import { type API, type InlineTool, type InlineToolConstructorOptions, type SanitizerConfig } from '@editorjs/editorjs'
 import { MATH_ICON } from './icons'
 import { MathfieldElement } from 'mathlive'
 import './index.css'
 
+type Config = {}
 export default class InlineMath implements InlineTool {
-    shortcut?: string | undefined
     public static get isInline() {
         return true
     }
-
     public static get title() {
         return 'Math'
     }
 
     private api: API
     private tag: string = 'span'
+    private config: Config
     constructor({ api, config }: InlineToolConstructorOptions) {
         this.api = api
+        const defaultConfig: Config = {}
+        this.config = { ...defaultConfig, ...(config ?? {}) }
     }
     public render(): HTMLElement {
         return new DOMParser().parseFromString(
             /*html */ `
-            <button type='button' class='${this.api.styles.inlineToolButton}'>
+        <button type='button' class='${this.api.styles.inlineToolButton}'>
             ${MATH_ICON}
         </button>`,
             'text/html',
@@ -92,27 +94,18 @@ export default class InlineMath implements InlineTool {
     private wrap(range: Range) {
         const selectedText = range.extractContents()
 
-        const mathContainer = new DOMParser().parseFromString(
-            /*html*/ `
-        <${this.tag} contenteditable='false'>
-            <math-field virtual-keyboard-mode='onfocus'
-            keypress-sound='none'
-            plonk-sound='none'
-            class='${this.CSS.inlineMath}'>
-            ${selectedText.textContent}
-            </math-field>
-            <span>&nbsp;</span>
-        </${this.tag}>
-        `,
-            'text/html',
-        ).body.firstChild as HTMLElement
+        const formulaElement = new MathfieldElement({ virtualKeyboardMode: 'manual' })
+        const mathContainer = document.createElement(this.tag)
+        mathContainer.setAttribute('contenteditable', 'false')
+
+        mathContainer.append(formulaElement)
+        mathContainer.append(/*html */ `<span>&nbsp;</span>`)
 
         range.insertNode(mathContainer)
 
-        const formula = mathContainer.querySelector('math-field') as HTMLInputElement
-        InlineMath.hydrate(this.api, formula)
+        InlineMath.hydrate(this.api, formulaElement)
 
-        this.api.selection.expandToTag(formula)
+        this.api.selection.expandToTag(formulaElement)
     }
 
     private unwrap(range: Range) {

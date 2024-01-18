@@ -1,11 +1,11 @@
-import { API, InlineTool, InlineToolConstructorOptions, SanitizerConfig } from '@editorjs/editorjs';
+import { type API, type InlineTool, type InlineToolConstructorOptions, type SanitizerConfig } from '@editorjs/editorjs';
 import './index.css';
 export default class InlineMath implements InlineTool {
-    shortcut?: string | undefined;
     static get isInline(): boolean;
     static get title(): string;
     private api;
     private tag;
+    private config;
     constructor({ api, config }: InlineToolConstructorOptions);
     render(): HTMLElement;
     surround(range: Range): void;
