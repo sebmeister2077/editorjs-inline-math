@@ -3,7 +3,9 @@ import { MATH_ICON } from './icons'
 import { MathfieldElement } from 'mathlive'
 import './index.css'
 
-type Config = {}
+export type InlineMathConfig = {
+    mode: 'virtual-keyboard-focus' | 'virtual-keyboard-manual' | 'toolbar-input'
+}
 export default class InlineMath implements InlineTool {
     public static get isInline() {
         return true
@@ -14,10 +16,12 @@ export default class InlineMath implements InlineTool {
 
     private api: API
     private tag: string = 'span'
-    private config: Config
+    private config: InlineMathConfig
     constructor({ api, config }: InlineToolConstructorOptions) {
         this.api = api
-        const defaultConfig: Config = {}
+        const defaultConfig: Partial<InlineMathConfig> = {
+            mode: 'virtual-keyboard-focus',
+        }
         this.config = { ...defaultConfig, ...(config ?? {}) }
     }
     public render(): HTMLElement {
@@ -93,13 +97,21 @@ export default class InlineMath implements InlineTool {
     private wrap(range: Range) {
         const selectedText = range.extractContents()
 
-        const formulaElement = new MathfieldElement({ virtualKeyboardMode: 'manual' })
         const mathContainer = document.createElement(this.tag)
         mathContainer.setAttribute('contenteditable', 'false')
 
-        mathContainer.append(formulaElement)
-        mathContainer.append(/*html */ `<span>&nbsp;</span>`)
+        const formulaElement = new MathfieldElement({ virtualKeyboardMode: 'off', plonkSound: 'none', keypressSound: 'none' })
+        if (this.config.mode === 'virtual-keyboard-focus') formulaElement.virtualKeyboardMode = 'onfocus'
+        if (this.config.mode === 'virtual-keyboard-manual') formulaElement.virtualKeyboardMode = 'manual'
 
+        formulaElement.classList.add(this.CSS.inlineMath)
+        formulaElement.textContent = selectedText.textContent
+        mathContainer.append(formulaElement)
+
+        const spanAfter = document.createElement('span')
+        spanAfter.innerHTML = '&nbsp;'
+
+        mathContainer.append(spanAfter)
         range.insertNode(mathContainer)
 
         InlineMath.hydrate(this.api, formulaElement)
