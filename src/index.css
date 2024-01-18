@@ -1,3 +1,13 @@
 math-field.editorjs-inline-math {
     display: inline-flex;
+    padding-inline: 6px;
+    border-radius: 8px;
+    outline: 1px solid transparent;
+    will-change: outline-color;
+    transition: outline-color 0.3s;
+}
+
+math-field.editorjs-inline-math:focus,
+math-field.editorjs-inline-math:focus-within {
+    outline-color: rgba(201, 201, 204, 0.62);
 }

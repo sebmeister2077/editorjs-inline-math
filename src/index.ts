@@ -27,7 +27,7 @@ export default class InlineMath implements InlineTool {
             ${MATH_ICON}
         </button>`,
             'text/html',
-        ).body.firstChild as HTMLElement
+        ).body.firstElementChild as HTMLElement
     }
 
     public surround(range: Range): void {
@@ -63,11 +63,10 @@ export default class InlineMath implements InlineTool {
                 const blockId = InlineMath.getElementBlockId(el)
                 if (!blockId) {
                     console.warn(
-                        "Parent block not found for <math-field/>, can't propagate changes to editor. This may occur if you hydrate a math-field that is not inside your editor.",
+                        "Parent block not found for <math-field/>, can't propagate changes to editor. This may occur if you hydrate an element that is not inside your editor.",
                     )
                     return
                 }
-
                 api.blocks.getById(blockId)?.dispatchChange()
             })
         })
