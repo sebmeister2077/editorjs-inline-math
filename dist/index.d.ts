@@ -19,4 +19,5 @@ export default class InlineMath implements InlineTool {
     private wrap;
     private unwrap;
     private static getElementBlockId;
+    private static tryDispatchChangeForBlock;
 }

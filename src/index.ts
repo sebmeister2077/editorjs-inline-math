@@ -63,15 +63,18 @@ export default class InlineMath implements InlineTool {
             el.addEventListener('input', (e) => {
                 el.textContent = el.value
             })
+            el.addEventListener('keydown', (e) => {
+                const hasNoText = !el.textContent
+                const isDeleteOrBackspace = e.key === 'Backspace' || e.key === 'Delete'
+                if (!isDeleteOrBackspace || !hasNoText) return
+
+                const blockId = InlineMath.getElementBlockId(el)
+                el.remove()
+            })
             el.addEventListener('blur', () => {
                 const blockId = InlineMath.getElementBlockId(el)
-                if (!blockId) {
-                    console.warn(
-                        "Parent block not found for <math-field/>, can't propagate changes to editor. This may occur if you hydrate an element that is not inside your editor.",
-                    )
-                    return
-                }
-                api.blocks.getById(blockId)?.dispatchChange()
+
+                InlineMath.tryDispatchChangeForBlock(api, blockId)
             })
         })
     }
@@ -138,5 +141,14 @@ export default class InlineMath implements InlineTool {
         const blockId = el.parentElement?.getAttribute(blockIdAttributeName)
         if (!blockId) return null
         return blockId
+    }
+    private static tryDispatchChangeForBlock(api: Pick<API, 'blocks'>, blockId: string | null) {
+        if (!blockId) {
+            console.warn(
+                "Parent block not found for <math-field/>, can't propagate changes to editor. This may occur if you hydrate an element that is not inside your editor.",
+            )
+            return
+        }
+        api.blocks.getById(blockId)?.dispatchChange()
     }
 }
