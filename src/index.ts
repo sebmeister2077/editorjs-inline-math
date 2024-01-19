@@ -5,6 +5,7 @@ import './index.css'
 
 export type InlineMathConfig = {
     mode: 'onfocus' | 'manual'
+    allowSpace: boolean
 }
 export default class InlineMath implements InlineTool {
     public static get isInline() {
@@ -21,6 +22,7 @@ export default class InlineMath implements InlineTool {
         this.api = api
         const defaultConfig: Partial<InlineMathConfig> = {
             mode: 'onfocus',
+            allowSpace: false,
         }
         this.config = { ...defaultConfig, ...(config ?? {}) }
     }
@@ -42,7 +44,9 @@ export default class InlineMath implements InlineTool {
         else this.wrap(range)
     }
     public checkState(selection: Selection): boolean {
-        return Boolean(this.api.selection.findParentTag(this.tag))
+        const parentTag = this.api.selection.findParentTag(this.tag)
+        console.log(parentTag)
+        return Boolean(parentTag)
     }
 
     public static get sanitize(): SanitizerConfig {
@@ -103,7 +107,12 @@ export default class InlineMath implements InlineTool {
         const mathContainer = document.createElement(this.tag)
         mathContainer.setAttribute('contenteditable', 'false')
 
-        const formulaElement = new MathfieldElement({ virtualKeyboardMode: this.config.mode, plonkSound: 'none', keypressSound: 'none' })
+        const formulaElement = new MathfieldElement({
+            virtualKeyboardMode: this.config.mode,
+            mathModeSpace: this.config.allowSpace ? '\\,' : undefined,
+            plonkSound: 'none',
+            keypressSound: 'none',
+        })
 
         formulaElement.classList.add(this.CSS.inlineMath)
         formulaElement.textContent = selectedText.textContent

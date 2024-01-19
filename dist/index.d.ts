@@ -2,6 +2,7 @@ import { type API, type InlineTool, type InlineToolConstructorOptions, type Sani
 import './index.css';
 export type InlineMathConfig = {
     mode: 'onfocus' | 'manual';
+    allowSpace: boolean;
 };
 export default class InlineMath implements InlineTool {
     static get isInline(): boolean;

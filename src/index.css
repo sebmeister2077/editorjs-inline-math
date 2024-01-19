@@ -11,3 +11,7 @@ math-field.editorjs-inline-math:focus,
 math-field.editorjs-inline-math:focus-within {
     outline-color: rgba(201, 201, 204, 0.62);
 }
+
+.ML__base {
+    user-select: text;
+}
