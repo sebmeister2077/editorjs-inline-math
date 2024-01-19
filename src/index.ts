@@ -4,7 +4,7 @@ import { MathfieldElement } from 'mathlive'
 import './index.css'
 
 export type InlineMathConfig = {
-    mode: 'virtual-keyboard-focus' | 'virtual-keyboard-manual' | 'toolbar-input'
+    mode: 'onfocus' | 'manual'
 }
 export default class InlineMath implements InlineTool {
     public static get isInline() {
@@ -20,7 +20,7 @@ export default class InlineMath implements InlineTool {
     constructor({ api, config }: InlineToolConstructorOptions) {
         this.api = api
         const defaultConfig: Partial<InlineMathConfig> = {
-            mode: 'virtual-keyboard-focus',
+            mode: 'onfocus',
         }
         this.config = { ...defaultConfig, ...(config ?? {}) }
     }
@@ -100,9 +100,7 @@ export default class InlineMath implements InlineTool {
         const mathContainer = document.createElement(this.tag)
         mathContainer.setAttribute('contenteditable', 'false')
 
-        const formulaElement = new MathfieldElement({ virtualKeyboardMode: 'off', plonkSound: 'none', keypressSound: 'none' })
-        if (this.config.mode === 'virtual-keyboard-focus') formulaElement.virtualKeyboardMode = 'onfocus'
-        if (this.config.mode === 'virtual-keyboard-manual') formulaElement.virtualKeyboardMode = 'manual'
+        const formulaElement = new MathfieldElement({ virtualKeyboardMode: this.config.mode, plonkSound: 'none', keypressSound: 'none' })
 
         formulaElement.classList.add(this.CSS.inlineMath)
         formulaElement.textContent = selectedText.textContent

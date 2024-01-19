@@ -1,7 +1,7 @@
 import { type API, type InlineTool, type InlineToolConstructorOptions, type SanitizerConfig } from '@editorjs/editorjs';
 import './index.css';
 export type InlineMathConfig = {
-    mode: 'virtual-keyboard-focus' | 'virtual-keyboard-manual' | 'toolbar-input';
+    mode: 'onfocus' | 'manual';
 };
 export default class InlineMath implements InlineTool {
     static get isInline(): boolean;
