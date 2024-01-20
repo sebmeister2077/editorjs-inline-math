@@ -1,4 +1,4 @@
-import { type API, type InlineTool, type InlineToolConstructorOptions, type SanitizerConfig } from '@editorjs/editorjs'
+import EditorJs, { type API, type InlineTool, type InlineToolConstructorOptions, type SanitizerConfig } from '@editorjs/editorjs'
 import { MATH_ICON } from './icons'
 import { MathfieldElement } from 'mathlive'
 import './index.css'
@@ -60,6 +60,7 @@ export default class InlineMath implements InlineTool {
         }
     }
 
+    /** Bind event listeners to the formula elements */
     public static hydrate(api: Pick<API, 'blocks'>, ...elements: HTMLElement[]) {
         const allFormulas = elements.length ? elements : document.querySelectorAll('math-field')
         allFormulas.forEach((el) => {
@@ -81,6 +82,26 @@ export default class InlineMath implements InlineTool {
                 InlineMath.tryDispatchChangeForBlock(api, blockId)
             })
         })
+    }
+
+    /** Use this method to toggle the readonly state of the formulas inside of the editor */
+    public static toggleReadonly(editorHolderOrFormula: string | MathfieldElement, value?: boolean) {
+        if (editorHolderOrFormula instanceof MathfieldElement) {
+            const formula = editorHolderOrFormula
+            toggleReadonly(formula)
+            return
+        }
+
+        const holder = editorHolderOrFormula
+        const allFormulas = document.querySelectorAll(`#${holder}`)
+        allFormulas.forEach((formula) => {
+            if (!(formula instanceof MathfieldElement)) return
+            toggleReadonly(formula)
+        })
+
+        function toggleReadonly(formula: MathfieldElement) {
+            formula.readOnly = value ?? !formula.readOnly
+        }
     }
     // renderActions?(): HTMLElement {
     //     throw new Error('Method not implemented.')
