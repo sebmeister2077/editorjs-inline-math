@@ -45,7 +45,6 @@ export default class InlineMath implements InlineTool {
     }
     public checkState(selection: Selection): boolean {
         const parentTag = this.api.selection.findParentTag(this.tag)
-        console.log(parentTag)
         return Boolean(parentTag)
     }
 
@@ -60,8 +59,8 @@ export default class InlineMath implements InlineTool {
         }
     }
 
-    /** Bind event listeners to the formula elements */
-    public static hydrate(api: Pick<API, 'blocks'>, ...elements: HTMLElement[]) {
+    /** Bind event listeners & editor events to the formula elements */
+    public static hydrate(api: Pick<API, 'blocks' | 'readOnly'>, ...elements: HTMLElement[]) {
         const allFormulas = elements.length ? elements : document.querySelectorAll('math-field')
         allFormulas.forEach((el) => {
             if (!(el instanceof MathfieldElement)) return
@@ -81,10 +80,16 @@ export default class InlineMath implements InlineTool {
 
                 InlineMath.tryDispatchChangeForBlock(api, blockId)
             })
+            InlineMath.toggleReadonly(el, api.readOnly.isEnabled)
+            const initialToggle = api.readOnly.toggle
+            api.readOnly.toggle = (state) => {
+                InlineMath.toggleReadonly(el, state)
+                return initialToggle(state)
+            }
         })
     }
 
-    /** Use this method to toggle the readonly state of the formulas inside of the editor */
+    /** Use this method to manually toggle the readonly state of the formula(s) inside of the editor */
     public static toggleReadonly(editorHolderOrFormula: string | MathfieldElement, value?: boolean) {
         if (editorHolderOrFormula instanceof MathfieldElement) {
             const formula = editorHolderOrFormula
@@ -93,7 +98,7 @@ export default class InlineMath implements InlineTool {
         }
 
         const holder = editorHolderOrFormula
-        const allFormulas = document.querySelectorAll(`#${holder}`)
+        const allFormulas = document.querySelectorAll(`#${holder} math-field`)
         allFormulas.forEach((formula) => {
             if (!(formula instanceof MathfieldElement)) return
             toggleReadonly(formula)
@@ -131,9 +136,10 @@ export default class InlineMath implements InlineTool {
         const formulaElement = new MathfieldElement({
             virtualKeyboardMode: this.config.mode,
             mathModeSpace: this.config.allowSpace ? '\\,' : undefined,
-            plonkSound: 'none',
-            keypressSound: 'none',
         })
+
+        formulaElement.setAttribute('plonk-sound', 'none')
+        formulaElement.setAttribute('keypress-sound', 'none')
 
         formulaElement.classList.add(this.CSS.inlineMath)
         formulaElement.textContent = selectedText.textContent

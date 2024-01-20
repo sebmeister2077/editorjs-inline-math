@@ -7,8 +7,8 @@ math-field.editorjs-inline-math {
     transition: outline-color 0.3s;
 }
 
-math-field.editorjs-inline-math:focus,
-math-field.editorjs-inline-math:focus-within {
+math-field.editorjs-inline-math:not([read-only]):focus,
+math-field.editorjs-inline-math:not([read-only]):focus-within {
     outline-color: rgba(201, 201, 204, 0.62);
 }
 

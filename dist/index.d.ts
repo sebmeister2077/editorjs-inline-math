@@ -16,9 +16,9 @@ export default class InlineMath implements InlineTool {
     surround(range: Range): void;
     checkState(selection: Selection): boolean;
     static get sanitize(): SanitizerConfig;
-    /** Bind event listeners to the formula elements */
-    static hydrate(api: Pick<API, 'blocks'>, ...elements: HTMLElement[]): void;
-    /** Use this method to toggle the readonly state of the formulas inside of the editor */
+    /** Bind event listeners & editor events to the formula elements */
+    static hydrate(api: Pick<API, 'blocks' | 'readOnly'>, ...elements: HTMLElement[]): void;
+    /** Use this method to manually toggle the readonly state of the formula(s) inside of the editor */
     static toggleReadonly(editorHolderOrFormula: string | MathfieldElement, value?: boolean): void;
     private get CSS();
     private wrap;
